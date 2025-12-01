@@ -135,6 +135,34 @@
 //     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 //   };
 
+//   // Decode base64 email body
+//   const decodeEmailBody = (bodyData) => {
+//     if (!bodyData) return "No content";
+
+//     try {
+//       // Nếu bodyData đã là HTML thuần, return luôn
+//       if (bodyData.includes("<") && bodyData.includes(">")) {
+//         return bodyData;
+//       }
+
+//       // Decode base64url (Gmail format)
+//       // Replace URL-safe characters
+//       const base64 = bodyData.replace(/-/g, "+").replace(/_/g, "/");
+
+//       // Decode base64
+//       const decoded = atob(base64);
+
+//       // Convert to UTF-8
+//       const utf8Decoded = decodeURIComponent(escape(decoded));
+
+//       return utf8Decoded;
+//     } catch (error) {
+//       console.error("Error decoding email body:", error);
+//       // Nếu decode fail, return original
+//       return bodyData;
+//     }
+//   };
+
 //   return (
 //     <div className="flex-1 flex flex-col bg-white">
 //       {/* Subject Header */}
@@ -214,7 +242,11 @@
 
 //                       {!isExpanded && (
 //                         <p className="text-sm text-gray-600 line-clamp-2">
-//                           {message.snippet || message.bodyData || "No content"}
+//                           {message.snippet ||
+//                             decodeEmailBody(message.bodyData)
+//                               .replace(/<[^>]*>/g, "")
+//                               .substring(0, 200) ||
+//                             "No content"}
 //                         </p>
 //                       )}
 //                     </div>
@@ -287,9 +319,16 @@
 //                   {isExpanded && (
 //                     <div className="ml-14 mt-4">
 //                       <div className="prose prose-sm max-w-none mb-4">
-//                         <div className="text-gray-800 leading-relaxed text-[15px]">
-//                           {message.bodyData || message.snippet || "No content"}
-//                         </div>
+//                         <div
+//                           className="text-gray-800 leading-relaxed text-[15px]"
+//                           dangerouslySetInnerHTML={{
+//                             __html: decodeEmailBody(
+//                               message.bodyData ||
+//                                 message.snippet ||
+//                                 "No content"
+//                             ),
+//                           }}
+//                         />
 //                       </div>
 
 //                       {/* Attachments Display */}
@@ -520,7 +559,6 @@
 // };
 
 // export default EmailDetail;
-
 import React, { useState } from "react";
 import {
   Mail,
@@ -686,6 +724,75 @@ const EmailDetail = ({ thread, onSendReply }) => {
     }
   };
 
+  // Get email body content from message
+  const getEmailBodyContent = (message) => {
+    // Nếu có bodyData hoặc alternateParts, decode và show
+    if (message.bodyData || message.alternateParts) {
+      return decodeEmailBody(
+        message.bodyData || message.snippet || "No content"
+      );
+    }
+
+    // Nếu có parts, xử lý parts
+    if (message.parts && message.parts.length > 0) {
+      // Tìm part có mimeType text/html (ưu tiên)
+      const htmlPart = message.parts.find(
+        (part) => part.mimeType === "text/html" && !part.attachmentId
+      );
+
+      if (htmlPart && htmlPart.bodyData) {
+        return decodeEmailBody(htmlPart.bodyData);
+      }
+
+      // Nếu không có text/html, tìm text/plain
+      const textPart = message.parts.find(
+        (part) => part.mimeType === "text/plain" && !part.attachmentId
+      );
+
+      if (textPart && textPart.bodyData) {
+        const plainText = decodeEmailBody(textPart.bodyData);
+        // Convert plain text to HTML with line breaks
+        return plainText.replace(/\n/g, "<br>");
+      }
+
+      // Nếu có multipart/alternative, đệ quy tìm trong parts con
+      const multipartPart = message.parts.find(
+        (part) => part.mimeType === "multipart/alternative" && part.parts
+      );
+
+      if (multipartPart && multipartPart.parts) {
+        const nestedHtmlPart = multipartPart.parts.find(
+          (p) => p.mimeType === "text/html" && !p.attachmentId
+        );
+
+        if (nestedHtmlPart && nestedHtmlPart.bodyData) {
+          return decodeEmailBody(nestedHtmlPart.bodyData);
+        }
+
+        const nestedTextPart = multipartPart.parts.find(
+          (p) => p.mimeType === "text/plain" && !p.attachmentId
+        );
+
+        if (nestedTextPart && nestedTextPart.bodyData) {
+          const plainText = decodeEmailBody(nestedTextPart.bodyData);
+          return plainText.replace(/\n/g, "<br>");
+        }
+      }
+    }
+
+    return message.snippet || "No content";
+  };
+
+  // Get attachments from message parts
+  const getAttachments = (message) => {
+    if (!message.parts || message.parts.length === 0) {
+      return [];
+    }
+
+    // Filter parts that have attachmentId
+    return message.parts.filter((part) => part.attachmentId);
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Subject Header */}
@@ -707,6 +814,7 @@ const EmailDetail = ({ thread, onSendReply }) => {
                 message.from.includes(userManager.user?.email) ||
                 message.isReply;
               const canCollapse = messages.length > 1;
+              const attachments = getAttachments(message);
 
               return (
                 <div
@@ -766,7 +874,7 @@ const EmailDetail = ({ thread, onSendReply }) => {
                       {!isExpanded && (
                         <p className="text-sm text-gray-600 line-clamp-2">
                           {message.snippet ||
-                            decodeEmailBody(message.bodyData)
+                            getEmailBodyContent(message)
                               .replace(/<[^>]*>/g, "")
                               .substring(0, 200) ||
                             "No content"}
@@ -845,31 +953,26 @@ const EmailDetail = ({ thread, onSendReply }) => {
                         <div
                           className="text-gray-800 leading-relaxed text-[15px]"
                           dangerouslySetInnerHTML={{
-                            __html: decodeEmailBody(
-                              message.bodyData ||
-                                message.snippet ||
-                                "No content"
-                            ),
+                            __html: getEmailBodyContent(message),
                           }}
                         />
                       </div>
 
                       {/* Attachments Display */}
-                      {message.parts && message.parts.length > 0 && (
+                      {attachments.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <div className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                             <Paperclip className="w-4 h-4" />
-                            {message.parts.length}{" "}
-                            {message.parts.length === 1
+                            {attachments.length}{" "}
+                            {attachments.length === 1
                               ? "Attachment"
                               : "Attachments"}
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {message.parts.map((part, idx) => {
+                            {attachments.map((part, idx) => {
                               const isImage =
                                 part.mimeType?.startsWith("image/");
                               const isPdf = part.mimeType === "application/pdf";
-                              const isXml = part.mimeType === "text/xml";
                               const sizeKB = part.bodySize
                                 ? (part.bodySize / 1024).toFixed(1)
                                 : "0";
