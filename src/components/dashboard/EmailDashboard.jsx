@@ -280,7 +280,20 @@ const EmailDashboard = () => {
 
     // Show email list on mobile when changing mailbox
     setShowEmailList(true);
-  }, [selectedMailbox, allThreadsState]);
+  }, [selectedMailbox]); // Remove allThreadsState from dependencies
+
+  // Separate effect to update selectedThread when allThreadsState changes
+  useEffect(() => {
+    // Only update if we have a selectedThreadId
+    if (selectedThreadId && allThreadsState.length > 0) {
+      const updatedThread = allThreadsState.find(
+        (t) => t.id === selectedThreadId
+      );
+      if (updatedThread) {
+        setSelectedThread(updatedThread);
+      }
+    }
+  }, [allThreadsState, selectedThreadId]);
 
   // Calculate unread count for each mailbox dynamically
   const calculateUnreadCounts = () => {
@@ -294,9 +307,9 @@ const EmailDashboard = () => {
     };
 
     allThreadsState.forEach((thread) => {
-      // Check if the FIRST message in thread is unread
-      const firstMessage = thread.messages?.[0];
-      const isUnread = firstMessage?.labelIds?.includes("UNREAD");
+      // Check if the LAST message in thread is unread
+      const lastMessage = thread.messages?.[thread.messages.length - 1];
+      const isUnread = lastMessage?.labelIds?.includes("UNREAD");
 
       // Get all unique labels from all messages in thread
       const labels =
@@ -552,25 +565,97 @@ const EmailDashboard = () => {
       thread.id === threadId
         ? {
             ...thread,
-            messages: thread.messages.map((msg, index) =>
-              index === 0
-                ? {
-                    ...msg,
-                    labelIds: read
-                      ? (msg.labelIds || []).filter((l) => l !== "UNREAD")
-                      : [...(msg.labelIds || []), "UNREAD"],
+            messages: thread.messages.map((msg, index) => {
+              if (index === thread.messages.length - 1) {
+                let newLabelIds = [...(msg.labelIds || [])];
+                if (read) {
+                  // Mark as read: remove UNREAD
+                  newLabelIds = newLabelIds.filter((l) => l !== "UNREAD");
+                } else {
+                  // Mark as unread: add UNREAD if not already there
+                  if (!newLabelIds.includes("UNREAD")) {
+                    newLabelIds.push("UNREAD");
                   }
-                : msg
-            ),
+                }
+                return {
+                  ...msg,
+                  labelIds: newLabelIds,
+                };
+              }
+              return msg;
+            }),
           }
         : thread
     );
     dispatch(setAllThreadsState(updatedThreads));
+
     await emailApi.modifyEmail(data);
   };
 
+  const handleBulkMarkAsRead = async (threadIds, read) => {
+    // Update all threads at once
+    const updatedThreads = allThreadsState.map((thread) => {
+      if (threadIds.includes(thread.id)) {
+        return {
+          ...thread,
+          messages: thread.messages.map((msg, index) => {
+            if (index === thread.messages.length - 1) {
+              let newLabelIds = [...(msg.labelIds || [])];
+              if (read) {
+                // Mark as read: remove UNREAD
+                newLabelIds = newLabelIds.filter((l) => l !== "UNREAD");
+              } else {
+                // Mark as unread: add UNREAD if not already there
+                if (!newLabelIds.includes("UNREAD")) {
+                  newLabelIds.push("UNREAD");
+                }
+              }
+              return {
+                ...msg,
+                labelIds: newLabelIds,
+              };
+            }
+            return msg;
+          }),
+        };
+      }
+      return thread;
+    });
+
+    dispatch(setAllThreadsState(updatedThreads));
+
+    // Call API for each thread
+    try {
+      await Promise.all(
+        threadIds.map((threadId) => {
+          const thread = allThreadsState.find((t) => t.id === threadId);
+          const lastMessage = thread?.messages?.[thread.messages.length - 1];
+          if (!lastMessage) return Promise.resolve();
+
+          const data = {
+            email_id: lastMessage.id,
+            add: read ? [] : ["UNREAD"],
+            remove: read ? ["UNREAD"] : [],
+          };
+          return emailApi.modifyEmail(data);
+        })
+      );
+    } catch (error) {
+      console.error("Error in bulk mark as read/unread:", error);
+    }
+  };
+
   const handleMarkAsUnread = (threadId) => {
-    handleMarkAsRead(threadId, false);
+    const thread = allThreadsState.find((t) => t.id === threadId);
+    const lastMessage = thread?.messages?.[thread.messages.length - 1];
+    if (!lastMessage) return;
+
+    const data = {
+      email_id: lastMessage.id,
+      add: ["UNREAD"],
+      remove: [],
+    };
+    handleMarkAsRead(threadId, false, data);
     alert("Marked as unread! 📧");
   };
 
@@ -651,6 +736,7 @@ const EmailDashboard = () => {
             onDeleteThread={handleDeleteThread}
             onArchiveThread={handleArchiveThread}
             onMarkAsRead={handleMarkAsRead}
+            onBulkMarkAsRead={handleBulkMarkAsRead}
             handleMoreLoading={handleMoreLoading}
             isMoreLoading={isLoadingMore}
             hasMore={!!nextPageToken}

@@ -21,6 +21,7 @@ const EmailList = ({
   onDeleteThread,
   onArchiveThread,
   onMarkAsRead,
+  onBulkMarkAsRead,
   handleMoreLoading,
   isMoreLoading,
   isInboxPage,
@@ -64,15 +65,16 @@ const EmailList = ({
   };
 
   const handleBulkMarkAsRead = () => {
-    if (selectedThreads.length > 0) {
-      selectedThreads.forEach((id) => {
-        const data = {
-          email_id: id,
-          add: ["UNREAD"],
-          remove: [],
-        };
-        onMarkAsRead(id, false, data);
-      });
+    if (selectedThreads.length > 0 && onBulkMarkAsRead) {
+      onBulkMarkAsRead(selectedThreads, true); // true = mark as read
+      setSelectedThreads([]);
+      setSelectAll(false);
+    }
+  };
+
+  const handleBulkMarkAsUnread = () => {
+    if (selectedThreads.length > 0 && onBulkMarkAsRead) {
+      onBulkMarkAsRead(selectedThreads, false); // false = mark as unread
       setSelectedThreads([]);
       setSelectAll(false);
     }
@@ -80,13 +82,15 @@ const EmailList = ({
 
   const handleSelectedThread = async (thread) => {
     setSelectedThreadId(thread.id);
-    if (thread.messages[0].labelIds.includes("UNREAD")) {
+    const lastMessage = thread.messages?.[thread.messages.length - 1];
+    if (lastMessage?.labelIds?.includes("UNREAD")) {
       const data = {
-        email_id: thread.id,
+        email_id: lastMessage.id,
         add: [],
         remove: ["UNREAD"],
       };
       onMarkAsRead(thread.id, true, data);
+      // onMarkAsRead(lastMessage.id, true, data);
     }
   };
 
@@ -157,12 +161,14 @@ const EmailList = ({
               <button
                 onClick={handleBulkDelete}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Delete selected"
               >
                 <Trash2 className="w-4 h-4 text-gray-600" />
               </button>
               <button
-                onClick={handleBulkMarkAsRead}
+                onClick={handleBulkMarkAsUnread}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Mark as unread"
               >
                 <Mail className="w-4 h-4 text-gray-600" />
               </button>
@@ -185,9 +191,12 @@ const EmailList = ({
 
           // Get first message for display
           const firstMessage = thread.messages?.[0] || {};
+          const lastMessage =
+            thread.messages?.[thread.messages.length - 1] || {};
           const messageCount = thread.messages?.length || 0;
 
-          const isUnread = firstMessage.labelIds?.includes("UNREAD");
+          // Check UNREAD on last message
+          const isUnread = lastMessage.labelIds?.includes("UNREAD");
           // Check if ANY message in the thread has STARRED label
           const isStarred =
             thread.messages?.some((msg) => msg.labelIds?.includes("STARRED")) ||
