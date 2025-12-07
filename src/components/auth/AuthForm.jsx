@@ -4,22 +4,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Mail, Lock, AlertCircle, User, Eye, EyeOff } from "lucide-react";
 
-// Validation schema cho login
+// Validation schema for login
 const loginSchema = z.object({
-  email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-// Validation schema cho signup
+// Validation schema for signup
 const signupSchema = z
   .object({
-    username: z.string().min(3, "Tên người dùng phải có ít nhất 3 ký tự"),
-    email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
-    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-    confirm_password: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirm_password: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirm_password, {
-    message: "Mật khẩu không khớp",
+    message: "Passwords do not match",
     path: ["confirm_password"],
   });
 
@@ -117,7 +120,7 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
       setGeneralError("");
       await onSubmit(data);
     } catch (err) {
-      setGeneralError(err.message || "Đã có lỗi xảy ra. Vui lòng thử lại.");
+      setGeneralError(err.message || "An error occurred. Please try again.");
     }
   };
 
@@ -126,7 +129,7 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
       setGeneralError("");
       await onGoogleSignIn();
     } catch (err) {
-      setGeneralError("Đăng nhập Google thất bại. Vui lòng thử lại.");
+      setGeneralError("Google sign-in failed. Please try again.");
     }
   };
 
@@ -146,9 +149,9 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
 
       {!isLogin && (
         <Input
-          label="Tên người dùng"
+          label="Username"
           type="text"
-          placeholder="Nhập tên người dùng"
+          placeholder="Enter your username"
           icon={User}
           register={register("username")}
           error={errors.username?.message}
@@ -157,7 +160,7 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
       )}
 
       <Input
-        label="Địa chỉ Email"
+        label="Email Address"
         type="email"
         placeholder="you@example.com"
         icon={Mail}
@@ -167,9 +170,9 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
       />
 
       <Input
-        label="Mật khẩu"
+        label="Password"
         type="password"
-        placeholder="Nhập mật khẩu của bạn"
+        placeholder="Enter your password"
         icon={Lock}
         register={register("password")}
         error={errors.password?.message}
@@ -178,9 +181,9 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
 
       {!isLogin && (
         <Input
-          label="Xác nhận mật khẩu"
+          label="Confirm Password"
           type="password"
-          placeholder="Nhập lại mật khẩu"
+          placeholder="Re-enter your password"
           icon={Lock}
           register={register("confirm_password")}
           error={errors.confirm_password?.message}
@@ -195,13 +198,13 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
               type="checkbox"
               className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
             />
-            <span className="text-gray-600">Ghi nhớ đăng nhập</span>
+            <span className="text-gray-600">Remember me</span>
           </label>
           <button
             type="button"
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Quên mật khẩu?
+            Forgot password?
           </button>
         </div>
       )}
@@ -211,7 +214,7 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
         loading={isSubmitting}
         disabled={isSubmitting}
       >
-        {isLogin ? "Đăng nhập" : "Đăng ký"}
+        {isLogin ? "Sign In" : "Sign Up"}
       </Button>
 
       {isLogin && (
@@ -223,7 +226,7 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-white px-3 text-gray-500 font-medium">
-                Hoặc tiếp tục với
+                Or continue with
               </span>
             </div>
           </div>
@@ -252,7 +255,7 @@ const AuthForm = ({ mode, onSubmit, onGoogleSignIn }) => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Đăng nhập với Google
+            Sign in with Google
           </Button>
         </>
       )}

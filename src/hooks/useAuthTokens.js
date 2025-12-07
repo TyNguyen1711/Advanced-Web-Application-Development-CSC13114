@@ -12,9 +12,8 @@ const useAuthTokens = () => {
         console.log("Access Token from URL:", accessToken);
         console.log("Refresh Token from URL:", refreshToken);
         if (accessToken && refreshToken) {
-          tokenManager.token = accessToken;
           localStorage.setItem("refresh_token", refreshToken);
-          // localStorage.setItem("access_token", accessToken);
+          localStorage.setItem("access_token", accessToken);
           tokenManager.token = accessToken;
           const response = await authApi.getProfile();
           userManager.user = response.data;

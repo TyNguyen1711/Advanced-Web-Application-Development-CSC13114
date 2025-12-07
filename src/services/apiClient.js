@@ -2,7 +2,8 @@ import axios, { AxiosError } from "axios";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:8080";
 // Biến lưu access token trong memory
-let accessToken = null;
+// let accessToken = null;
+let accessToken = localStorage.getItem("access_token") || null;
 
 let userDetail = null;
 // Axios instance

@@ -20,19 +20,19 @@ import {
   Smile,
   Clock,
 } from "lucide-react";
-import ComposeModal from "../modal/ComposeModal";
-import EmailDetail from "./EmailDetail";
-import EmailList from "./EmailList";
-import Sidebar from "./Sidebar";
-import emailApi from "../../services/emailApi";
+import ComposeModal from "../components/modal/ComposeModal";
+import EmailDetail from "../components/dashboard/EmailDetail";
+import EmailList from "../components/dashboard/EmailList";
+import Sidebar from "../components/dashboard/Sidebar";
+import emailApi from "../services/emailApi";
 import Swal from "sweetalert2";
-import useAuthTokens from "../../hooks/useAuthTokens";
-import useFetchThreads from "../../hooks/useFetchThreads";
+import useAuthTokens from "../hooks/useAuthTokens";
+import useFetchThreads from "../hooks/useFetchThreads";
 import {
   setAllThreadsState,
   setNextPageToken,
   appendThreads,
-} from "../../redux/threadSlice";
+} from "../redux/threadSlice";
 
 // Compose Modal Component
 
