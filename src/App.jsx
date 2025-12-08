@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { LoginPage } from "./components/auth/LoginPage";
 
@@ -23,23 +23,21 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/kanpan" element={<KanpanPage />} />
-            {/* <Route path="/access" element={<AccessCallback />} /> */}
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/kanpan" element={<KanpanPage />} />
+          {/* <Route path="/access" element={<AccessCallback />} /> */}
 
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <EmailDashboard />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </AuthProvider>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <EmailDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </QueryClientProvider>
   );

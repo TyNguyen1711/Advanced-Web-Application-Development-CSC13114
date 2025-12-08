@@ -33,6 +33,7 @@ import {
   setNextPageToken,
   appendThreads,
 } from "../redux/threadSlice";
+import Header from "../components/dashboard/Header";
 
 // Compose Modal Component
 
@@ -230,7 +231,6 @@ const EmailDashboard = () => {
   const [selectedMailbox, setSelectedMailbox] = useState("inbox");
   const [selectedThread, setSelectedThread] = useState(null);
   const [selectedThreadId, setSelectedThreadId] = useState("");
-  // const [reset, setReset] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [showEmailList, setShowEmailList] = useState(true);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -684,34 +684,10 @@ const EmailDashboard = () => {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b border-gray-200 shadow-sm z-20">
-        <div className="px-4 lg:px-6 py-4 flex items-center gap-4">
-          <button
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <Mail className="w-6 h-6 text-gray-700" />
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg">
-              <Mail className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                MailBox
-              </h1>
-              <p className="text-xs text-gray-500">Professional Email Client</p>
-            </div>
-          </div>
-
-          <button
-            onClick={handleCompose}
-            className="ml-auto lg:hidden px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium flex items-center gap-2 shadow-lg"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+      <Header
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        handleCompose={handleCompose}
+      />
 
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
