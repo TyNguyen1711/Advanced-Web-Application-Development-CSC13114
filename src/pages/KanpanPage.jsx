@@ -1648,13 +1648,22 @@ export default function EmailKanbanBoard() {
 
       return newColumns;
     });
-    await taskApi.updateStatusTask({
+
+    // Prepare data for API
+    const updateData = {
       thread_id: thread.id,
       send_at: new Date(
         thread.messages[thread.messages.length - 1].date
       ).toISOString(),
       status: targetColumnId.toUpperCase(),
-    });
+    };
+
+    // If moving to SNOOZED column, add default snooze time (1 hour)
+    if (targetColumnId.toUpperCase() === "SNOOZED") {
+      updateData.snooze_time_in_seconds = 3600; // Default 1 hour
+    }
+
+    await taskApi.updateStatusTask(updateData);
     setDraggedItem(null);
     setDragOverColumn(null);
     setDragOverIndex(null);
