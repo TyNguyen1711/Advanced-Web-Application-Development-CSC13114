@@ -26,9 +26,17 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/kanpan" element={<KanpanPage />} />
+
           {/* <Route path="/access" element={<AccessCallback />} /> */}
 
+          <Route
+            path="/kanpan"
+            element={
+              <ProtectedRoute>
+                <KanpanPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/"
             element={
