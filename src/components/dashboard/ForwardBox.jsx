@@ -8,11 +8,8 @@ import {
   Smile,
   Trash2,
   MoreVertical,
-  Minimize2,
-  Maximize2,
   Loader2,
 } from "lucide-react";
-import { userManager } from "../../services/apiClient";
 import emailApi from "../../services/emailApi";
 import { setAllThreadsState } from "../../redux/threadSlice";
 import Swal from "sweetalert2";
@@ -267,7 +264,6 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
       (c) => c.charCodeAt(0)
     );
 
-    // Mã hóa lại thành Base64 chuẩn
     return btoa(String.fromCharCode(...decodedBytes));
   }
   const handleSend = async () => {
@@ -298,11 +294,11 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
             return {
               filename: att.name,
               content_type: att.mimeType,
-              data: base64urlToBase64String(response.data?.data) || "", // Base64 data from API
+              data: base64urlToBase64String(response.data?.data) || "",
             };
           } catch (error) {
             console.error(`Error fetching attachment ${att.name}:`, error);
-            // Fallback to attachmentId if fetch fails
+
             return {
               filename: att.name,
               content_type: att.mimeType,
@@ -312,7 +308,6 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
         })
       );
 
-      // Handle newly uploaded files
       const newAttachments = attachments
         .filter((att) => att.data && !att.attachmentId)
         .map((att) => ({
@@ -321,26 +316,21 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
           data: att.data,
         }));
 
-      console.log("New uploaded attachments:", newAttachments);
-
       const allAttachments = [
         ...originalAttachmentsWithData,
         ...newAttachments,
       ];
 
-      // Auto-generate subject from original message (Gmail style)
       const originalSubject =
         forwardingMessage?.subject || thread?.subject || "";
       const finalSubject = originalSubject
         ? `Fwd: ${originalSubject}`
         : "Fwd: (no subject)";
 
-      // Get full HTML content from contentEditable div
       const fullHtmlBody = bodyRef.current
         ? bodyRef.current.innerHTML
         : bodyText;
 
-      // Prepare data according to EmailForwardReq entity
       const forwardData = {
         thread_id: thread.id,
         google_message_id: forwardingMessage.id,
@@ -348,8 +338,8 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
         cc: ccTags.length > 0 ? ccTags : [],
         bcc: bccTags.length > 0 ? bccTags : [],
         subject: finalSubject,
-        body: fullHtmlBody, // Send full HTML content
-        html: true, // Mark as HTML
+        body: fullHtmlBody,
+        html: true,
         attachments: allAttachments.length > 0 ? allAttachments : [],
       };
 
@@ -362,7 +352,6 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
         );
         dispatch(setAllThreadsState(updatedThreads));
 
-        // Show success notification
         Swal.fire({
           icon: "success",
           title: "Email forwarded!",
@@ -371,8 +360,8 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
           showConfirmButton: false,
         });
 
-        onSend(); // Notify parent component
-        onCancel(); // Close the forward box
+        onSend();
+        onCancel();
       }
     } catch (error) {
       console.error("Error forwarding email:", error);
@@ -600,7 +589,7 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
               </button>
             </div>
           )}
-          {/* Body Field - Editable full HTML content (Gmail style) */}
+
           <div
             ref={bodyRef}
             contentEditable={true}

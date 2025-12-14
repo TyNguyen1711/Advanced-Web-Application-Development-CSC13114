@@ -114,10 +114,48 @@ const useGetAllTasks = () => {
     [fetchTasksForType]
   );
 
+  // Fetch initial data for a new type (useful when adding new columns)
+  // This automatically enables infinity scroll for the new column
+  const initializeNewType = useCallback(
+    async (typeName) => {
+      console.log(
+        `[useFetchTask] Initializing data for new column: ${typeName}`
+      );
+      try {
+        dispatch(setLoadingForType({ typeName, loading: true }));
+        const data = await taskApi.getTasksByType(typeName);
+        const threads = addSummaryToThreads(data.mailTasks || []);
+
+        dispatch(
+          setThreadsForType({
+            typeName,
+            threads,
+            nextPageToken: data.nextPageToken || null,
+          })
+        );
+
+        console.log(
+          `[useFetchTask] ${typeName} initialized with ${
+            threads.length
+          } items, nextPageToken: ${!!data.nextPageToken}`
+        );
+        return data;
+      } catch (err) {
+        const errorMsg = err.message || `Failed to initialize ${typeName}`;
+        dispatch(setErrorForType({ typeName, error: errorMsg }));
+        throw err;
+      } finally {
+        dispatch(setLoadingForType({ typeName, loading: false }));
+      }
+    },
+    [dispatch]
+  );
+
   return {
     fetchAllTasks,
     fetchTasksForType,
     refreshTasksForType,
+    initializeNewType, // New helper for initializing custom columns
     loading,
     error,
   };

@@ -204,7 +204,6 @@ const EmailDashboard = () => {
     };
     getThreadById();
   }, [selectedThreadId]);
-  // Filter threads by mailbox based on labelIds
   const handleMoreLoading = async () => {
     if (!nextPageToken || isLoadingMore) return;
     setIsLoadingMore(true);
@@ -214,9 +213,8 @@ const EmailDashboard = () => {
     setIsLoadingMore(false);
   };
   const currentThreads = allThreadsState.filter((thread) => {
-    // Lấy tất cả labels từ tất cả messages trong thread
     const labels = thread?.messages?.flatMap((msg) => msg.labelIds || []) || [];
-    const uniqueLabels = [...new Set(labels)]; // Loại bỏ trùng lặp
+    const uniqueLabels = [...new Set(labels)];
 
     switch (selectedMailbox) {
       case "inbox":

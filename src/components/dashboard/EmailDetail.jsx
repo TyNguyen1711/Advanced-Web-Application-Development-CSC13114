@@ -65,20 +65,13 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
       const response = await emailApi.replyEmail(data);
 
       if (response?.data) {
-        // Update the thread in Redux store
         const updatedThread = response.data;
         const updatedThreads = allThreadsState.map((t) =>
           t.id === updatedThread.id ? updatedThread : t
         );
         dispatch(setAllThreadsState(updatedThreads));
-
-        // Update local messages state to reflect the new reply
         setMessages(updatedThread.messages);
-
-        // Expand the last message (the new reply)
         setExpandedMessages(new Set([updatedThread.messages.length - 1]));
-
-        // Show success notification
         Swal.fire({
           icon: "success",
           title: "Reply sent!",
@@ -103,7 +96,6 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
   };
 
   const handleSendForward = async () => {
-    // This is called after successful forward from ForwardBox
     setForwardingMessage(null);
   };
 
@@ -111,7 +103,6 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
     const newExpanded = new Set(expandedMessages);
     if (newExpanded.has(index)) {
       newExpanded.delete(index);
-      // If collapsing the message being replied to, close reply box
       if (replyingToIndex === index) {
         setReplyingToIndex(null);
       }
@@ -122,19 +113,16 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
   };
 
   const toggleMessageStar = async (index) => {
-    // Use functional update to get the latest state
     setMessages((prevMessages) => {
       const message = prevMessages[index];
       const isStarred = message.labelIds?.includes("STARRED");
 
-      // Prepare data for API
       const data = {
         email_id: message.id,
         add: isStarred ? [] : ["STARRED"],
         remove: isStarred ? ["STARRED"] : [],
       };
 
-      // Update local state immediately (optimistic update)
       const updatedMessages = [...prevMessages];
       if (isStarred) {
         updatedMessages[index] = {
@@ -150,7 +138,6 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
         };
       }
 
-      // Update Redux store
       const updatedThreads = allThreadsState.map((t) => {
         if (t.id === thread.id) {
           return {
@@ -162,10 +149,7 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
       });
       dispatch(setAllThreadsState(updatedThreads));
 
-      // Call API (don't await inside setState)
       emailApi.modifyEmail(data).catch((error) => {
-        console.error("Error toggling star:", error);
-        // Revert on error - use the original message state
         setMessages(prevMessages);
       });
 
@@ -175,12 +159,12 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
 
   const handleReplyClick = (index) => {
     setReplyingToIndex(index);
-    setForwardingMessage(null); // Close forward if open
+    setForwardingMessage(null);
   };
 
   const handleForwardClick = (message) => {
     setForwardingMessage(message);
-    setReplyingToIndex(null); // Close reply if open
+    setReplyingToIndex(null);
   };
 
   const handleCancelReply = () => {
@@ -193,7 +177,6 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
 
   const handleDownloadAttachment = async (messageId, attachment) => {
     try {
-      // Show loading state
       Swal.fire({
         title: "Downloading...",
         text: `Downloading ${attachment.filename}`,
@@ -203,19 +186,16 @@ const EmailDetail = ({ thread, onSendReply, onMarkAsUnread }) => {
         },
       });
 
-      // Fetch attachment data from API
       const response = await emailApi.getAttachment(
         messageId,
         attachment.attachmentId
       );
 
       if (response?.data?.data) {
-        // Convert base64url to base64
         const base64Data = response.data.data
           .replace(/-/g, "+")
           .replace(/_/g, "/");
 
-        // Convert base64 to blob
         const byteCharacters = atob(base64Data);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {

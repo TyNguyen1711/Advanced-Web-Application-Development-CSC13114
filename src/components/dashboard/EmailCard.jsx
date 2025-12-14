@@ -5,6 +5,8 @@ import EmailModal from "../modal/EmailModal";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { removeThreadFromType } from "../../redux/taskSlice";
+import getDateTimeString from "../../utils/getDateTimeString";
+import { createPortal } from "react-dom";
 
 const EmailCard = ({
   threadId,
@@ -15,10 +17,19 @@ const EmailCard = ({
   style,
   isSnoozed = true,
   columnId,
+  onOpenEmail, // Callback to notify parent when opening email
 }) => {
   const dispatch = useDispatch();
   const [isOpenSnooze, setIsOpenSnooze] = useState(false);
   const [isOpenEmailModal, setIsOpenEmailModal] = useState(false);
+
+  const handleOpenEmail = () => {
+    setIsOpenEmailModal(true);
+    // Notify parent (e.g., SnoozeModal) to hide itself
+    if (onOpenEmail) {
+      onOpenEmail();
+    }
+  };
   const handleSnooze = async (snooze_time_in_seconds) => {
     if (columnId) {
       dispatch(removeThreadFromType({ typeName: columnId, threadId }));
@@ -70,7 +81,7 @@ const EmailCard = ({
               {item.from}
             </h4>
             <span className="text-xs text-gray-400 whitespace-nowrap">
-              {item.date}
+              {getDateTimeString(item.date)}
             </span>
           </div>
           <p className="text-sm font-medium text-gray-800 mt-1 line-clamp-1">
@@ -103,7 +114,7 @@ const EmailCard = ({
         )}
 
         <button
-          onClick={() => setIsOpenEmailModal(true)}
+          onClick={handleOpenEmail}
           className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-blue-500 transition-colors"
         >
           <span>Open Mail</span>
@@ -122,13 +133,15 @@ const EmailCard = ({
           emailSubject={item.subject}
         />
       )}
-      {isOpenEmailModal && (
-        <EmailModal
-          thread={thread}
-          isOpen={isOpenEmailModal}
-          setIsOpen={setIsOpenEmailModal}
-        />
-      )}
+      {isOpenEmailModal &&
+        createPortal(
+          <EmailModal
+            thread={thread}
+            isOpen={isOpenEmailModal}
+            setIsOpen={setIsOpenEmailModal}
+          />,
+          document.body
+        )}
     </div>
   );
 };

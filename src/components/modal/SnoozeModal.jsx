@@ -8,10 +8,23 @@ export default function SnoozeModal({
   snoozeEmails,
   loading,
 }) {
+  const [isEmailModalOpen, setIsEmailModalOpen] = React.useState(false);
+
+  // Reset state when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setIsEmailModalOpen(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center ${
+        isEmailModalOpen ? "invisible" : ""
+      }`}
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -19,7 +32,7 @@ export default function SnoozeModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl min-h-[80vh] max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl min-h-[80vh] max-h-[90vh] animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -42,7 +55,7 @@ export default function SnoozeModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto h-[calc(90vh-88px)]">
+        <div className="p-6 overflow-y-auto h-[calc(90vh-88px)] overflow-x-visible">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
@@ -74,6 +87,7 @@ export default function SnoozeModal({
                       thread={thread}
                       isDragging={false}
                       isSnoozed={false}
+                      onOpenEmail={() => setIsEmailModalOpen(true)}
                     />
                   </div>
                 );

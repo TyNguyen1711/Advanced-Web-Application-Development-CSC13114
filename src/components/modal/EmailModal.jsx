@@ -5,6 +5,7 @@ import {
   Star,
   MoreVertical,
   Reply,
+  Forward,
   Archive,
   Trash2,
   Tag,
@@ -16,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import ReplyBox from "../dashboard/ReplyBox";
+import ForwardBox from "../dashboard/ForwardBox";
 import emailApi from "../../services/emailApi";
 import { setAllThreadsState } from "../../redux/threadSlice";
 import { userManager } from "../../services/apiClient";
@@ -28,7 +30,9 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
   const [showActions, setShowActions] = useState(null);
   const [expandedMessages, setExpandedMessages] = useState(new Set());
   const [replyingToIndex, setReplyingToIndex] = useState(null);
+  const [forwardingToIndex, setForwardingToIndex] = useState(null);
   const [isSendingReply, setIsSendingReply] = useState(false);
+  const [isSendingForward, setIsSendingForward] = useState(false);
   const [messages, setMessages] = useState([]);
 
   React.useEffect(() => {
@@ -46,6 +50,7 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
   const handleClose = () => {
     setIsOpen(false);
     setReplyingToIndex(null);
+    setForwardingToIndex(null);
   };
 
   const toggleMessageExpand = (index) => {
@@ -151,10 +156,51 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
 
   const handleReplyClick = (index) => {
     setReplyingToIndex(index);
+    setForwardingToIndex(null); // Close forward box if open
   };
 
   const handleCancelReply = () => {
     setReplyingToIndex(null);
+  };
+
+  const handleForwardClick = (index) => {
+    setForwardingToIndex(index);
+    setReplyingToIndex(null); // Close reply box if open
+  };
+
+  const handleCancelForward = () => {
+    setForwardingToIndex(null);
+  };
+
+  const handleSendForward = async (data) => {
+    if (forwardingToIndex === null || isSendingForward) return;
+
+    setIsSendingForward(true);
+    try {
+      const response = await emailApi.forwardEmail(data);
+
+      if (response?.data) {
+        Swal.fire({
+          icon: "success",
+          title: "Forward sent!",
+          text: "Your message has been forwarded successfully.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+
+      setForwardingToIndex(null);
+    } catch (error) {
+      console.error("Error forwarding email:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Failed to forward",
+        text: "Failed to forward email. Please try again.",
+        confirmButtonColor: "#3b82f6",
+      });
+    } finally {
+      setIsSendingForward(false);
+    }
   };
 
   const handleDownloadAttachment = async (messageId, attachment) => {
@@ -328,7 +374,7 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm h-[100vh]  p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm h-[100vh]  p-4"
       onClick={handleClose}
     >
       <div
@@ -362,6 +408,7 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
               const attachments = getAttachments(message);
               const isLastMessage = index === messages.length - 1;
               const showReplyBox = replyingToIndex === index;
+              const showForwardBox = forwardingToIndex === index;
 
               return (
                 <div key={message.id || index}>
@@ -599,21 +646,35 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
                         )}
 
                         {/* Reply Actions */}
-                        {isExpanded && (isLastMessage || !showReplyBox) && (
-                          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
-                            <button
-                              onClick={() => handleReplyClick(index)}
-                              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
-                                showReplyBox
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "text-gray-700 hover:bg-gray-100"
-                              }`}
-                            >
-                              <Reply className="w-4 h-4" />
-                              Reply
-                            </button>
-                          </div>
-                        )}
+                        {isExpanded &&
+                          (isLastMessage ||
+                            (!showReplyBox && !showForwardBox)) && (
+                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
+                              <button
+                                onClick={() => handleReplyClick(index)}
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                                  showReplyBox
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "text-gray-700 hover:bg-gray-100"
+                                }`}
+                              >
+                                <Reply className="w-4 h-4" />
+                                Reply
+                              </button>
+
+                              <button
+                                onClick={() => handleForwardClick(index)}
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                                  showForwardBox
+                                    ? "bg-green-100 text-green-700"
+                                    : "text-gray-700 hover:bg-gray-100"
+                                }`}
+                              >
+                                <Forward className="w-4 h-4" />
+                                Forward
+                              </button>
+                            </div>
+                          )}
                       </div>
                     )}
                   </div>
@@ -630,13 +691,23 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
                       isLoading={isSendingReply}
                     />
                   )}
+
+                  {/* Forward Box */}
+                  {showForwardBox && (
+                    <ForwardBox
+                      thread={thread}
+                      forwardingMessage={message}
+                      onSend={handleSendForward}
+                      onCancel={handleCancelForward}
+                    />
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Loading Overlay */}
+        {/* Loading Overlay for Reply */}
         {isSendingReply && (
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 border border-gray-200">
@@ -647,6 +718,23 @@ const EmailModal = ({ thread, isOpen, setIsOpen }) => {
                 </h3>
                 <p className="text-sm text-gray-600">
                   Please wait while we send your message
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading Overlay for Forward */}
+        {isSendingForward && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 border border-gray-200">
+              <Loader2 className="w-12 h-12 text-green-600 animate-spin" />
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  Forwarding Email...
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Please wait while we forward your message
                 </p>
               </div>
             </div>

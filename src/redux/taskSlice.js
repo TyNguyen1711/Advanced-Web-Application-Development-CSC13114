@@ -59,6 +59,7 @@ const taskSlice = createSlice({
       }
     },
 
+    // Set loading state for a specific type
     setLoadingForType: (state, action) => {
       const { typeName, loading } = action.payload;
       const mailIndex = state.mails.findIndex((m) => m.name === typeName);
@@ -67,6 +68,7 @@ const taskSlice = createSlice({
       }
     },
 
+    // Set error for a specific type
     setErrorForType: (state, action) => {
       const { typeName, error } = action.payload;
       const mailIndex = state.mails.findIndex((m) => m.name === typeName);
@@ -75,20 +77,25 @@ const taskSlice = createSlice({
       }
     },
 
+    // Add a new list type (column) with infinity scroll support
+    // All new columns automatically get infinity scroll capability
     addNewListType: (state, action) => {
       const { typeName, icon, color } = action.payload;
       if (!state.listTypes.includes(typeName)) {
         state.listTypes.push(typeName);
         state.mails.push({
           name: typeName,
-          nextPageToken: null,
+          nextPageToken: null, // Will be set when data is fetched
           threads: [],
           loading: false,
-          hasMore: true,
+          hasMore: true, // Assume more data available initially
           error: null,
           icon: icon || null,
           color: color || null,
         });
+        console.log(
+          `[Redux] New column "${typeName}" added with infinity scroll support`
+        );
       }
     },
 

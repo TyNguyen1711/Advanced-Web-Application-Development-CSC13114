@@ -82,10 +82,7 @@ function Column({
 
   useEffect(() => {
     isLoadingRef.current = column.loading;
-    if (!column.loading) {
-      console.log(`${column.name} loading done, isLoadingRef reset to false`);
-    }
-  }, [column.loading, column.name]);
+  }, [column.loading]);
 
   useEffect(() => {
     if (observerRef.current) {
@@ -100,6 +97,7 @@ function Column({
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
+
         if (
           entry.isIntersecting &&
           column.nextPageToken &&
@@ -109,7 +107,10 @@ function Column({
           onLoadMore(column.name);
         }
       },
-      { threshold: 0.1, rootMargin: "100px" }
+      {
+        threshold: 0.1,
+        rootMargin: "100px",
+      }
     );
 
     observerRef.current.observe(loadMoreRef.current);
@@ -312,6 +313,7 @@ function Column({
           />
         ))}
 
+        {/* Loading indicator for infinity scroll */}
         {column.loading && (
           <div className="text-center py-4">
             <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
@@ -319,6 +321,7 @@ function Column({
           </div>
         )}
 
+        {/* Infinity scroll trigger - works for all columns */}
         {column.nextPageToken && !column.loading && (
           <div ref={loadMoreRef} className="h-4" />
         )}
@@ -481,19 +484,31 @@ export default function EmailKanbanBoard() {
   const handleLoadMore = useCallback(
     (typeName) => {
       const mail = mails.find((m) => m.name === typeName);
-      if (
-        mail &&
-        mail.nextPageToken &&
-        mail.nextPageToken.trim() &&
-        !mail.loading
-      ) {
-        fetchTasksForType(typeName, mail.nextPageToken);
-      } else {
-        console.log(`Cannot load more for ${typeName}:`, {
-          hasNextPageToken: !!mail?.nextPageToken,
-          isLoading: mail?.loading,
-        });
+
+      // Validate mail exists
+      if (!mail) {
+        console.warn(`[${typeName}] Column not found in Redux state`);
+        return;
       }
+
+      // Validate nextPageToken
+      if (!mail.nextPageToken || !mail.nextPageToken.trim()) {
+        console.log(`[${typeName}] No more data to load`);
+        return;
+      }
+
+      // Check if already loading
+      if (mail.loading) {
+        console.log(`[${typeName}] Already loading, skipping...`);
+        return;
+      }
+
+      // All validations passed, fetch more data
+      console.log(
+        `[${typeName}] Fetching more items with token:`,
+        mail.nextPageToken.substring(0, 20) + "..."
+      );
+      fetchTasksForType(typeName, mail.nextPageToken);
     },
     [mails, fetchTasksForType]
   );
