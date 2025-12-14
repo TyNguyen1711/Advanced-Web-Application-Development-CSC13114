@@ -789,6 +789,19 @@ export default function EmailKanbanBoard() {
     }
 
     try {
+      // Nếu snooze thành công, xóa thread khỏi TẤT CẢ các cột (INBOX, TODO, DONE)
+      console.log("Updating task status with data:", thread.id);
+      if (targetColumn.name === "SNOOZED") {
+        // Xóa khỏi tất cả các type
+        ["INBOX", "TODO", "DONE"].forEach((typeName) => {
+          dispatch(
+            removeThreadFromType({
+              typeName,
+              threadId: thread.id,
+            })
+          );
+        });
+      }
       await taskApi.updateStatusTask(updateData);
     } catch (err) {
       console.error("Failed to update task status:", err);

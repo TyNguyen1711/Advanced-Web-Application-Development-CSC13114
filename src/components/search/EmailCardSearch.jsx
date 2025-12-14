@@ -38,9 +38,9 @@ const EmailCardSearch = ({ thread }) => {
 
         <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 border border-gray-100">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-            <span className="text-xs font-semibold text-violet-600 uppercase tracking-wide">
-              AI Summary
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold  uppercase tracking-wide">
+              Snippet
             </span>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">

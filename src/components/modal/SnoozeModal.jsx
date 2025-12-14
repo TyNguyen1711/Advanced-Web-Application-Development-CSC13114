@@ -19,7 +19,7 @@ export default function SnoozeModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl min-h-[80vh] max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -42,7 +42,7 @@ export default function SnoozeModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
+        <div className="p-6 overflow-y-auto h-[calc(90vh-88px)]">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
