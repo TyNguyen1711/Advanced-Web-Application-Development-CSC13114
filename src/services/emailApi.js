@@ -43,5 +43,11 @@ const emailApi = {
     const response = await apiClient.delete(`/emails/messages/${id}`);
     return response.data;
   },
+  searchEmails: async (keyword, pageToken) => {
+    const response = await apiClient.get(
+      `/emails/search/fuzzy?keyword=${encodeURIComponent(keyword)}`
+    );
+    return response.data;
+  },
 };
 export default emailApi;
