@@ -88,6 +88,7 @@ export default function SnoozeModal({
                       isDragging={false}
                       isSnoozed={false}
                       onOpenEmail={() => setIsEmailModalOpen(true)}
+                      onCloseEmail={() => setIsEmailModalOpen(false)}
                     />
                   </div>
                 );

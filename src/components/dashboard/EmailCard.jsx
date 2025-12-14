@@ -18,6 +18,7 @@ const EmailCard = ({
   isSnoozed = true,
   columnId,
   onOpenEmail, // Callback to notify parent when opening email
+  onCloseEmail, // Callback to notify parent when closing email
 }) => {
   const dispatch = useDispatch();
   const [isOpenSnooze, setIsOpenSnooze] = useState(false);
@@ -138,7 +139,12 @@ const EmailCard = ({
           <EmailModal
             thread={thread}
             isOpen={isOpenEmailModal}
-            setIsOpen={setIsOpenEmailModal}
+            setIsOpen={(value) => {
+              setIsOpenEmailModal(value);
+              if (!value && onCloseEmail) {
+                onCloseEmail();
+              }
+            }}
           />,
           document.body
         )}
