@@ -22,6 +22,19 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   const location = useLocation();
   const searchTimeoutRef = useRef(null);
   const searchContainerRef = useRef(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await authApi.getProfile();
+
+        userManager.user = userData.data;
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
   const tabs = [
     {
       id: 0,
@@ -39,51 +52,50 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   ];
 
   // Mock API để lấy gợi ý
-  const fetchSuggestions = async (query) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  // const fetchSuggestions = async (query) => {
+  //   setIsLoading(true);
+  //   try {
+  //     // Simulate API call
+  //     await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Mock data - gợi ý dựa trên query
-      const mockSuggestions = [
-        {
-          id: 1,
-          subject: `${query} - Hợp đồng mới từ công ty ABC`,
-          from: "abc@company.com",
-        },
-        {
-          id: 2,
-          subject: `Re: ${query} - Báo cáo tháng 12`,
-          from: "manager@company.com",
-        },
-        {
-          id: 3,
-          subject: `${query} - Thông báo họp team`,
-          from: "hr@company.com",
-        },
-        {
-          id: 4,
-          subject: `Fwd: ${query} - Tài liệu quan trọng`,
-          from: "support@company.com",
-        },
-        {
-          id: 5,
-          subject: `${query} - Lịch nghỉ lễ 2025`,
-          from: "admin@company.com",
-        },
-      ];
+  //     // Mock data - gợi ý dựa trên query
+  //     const mockSuggestions = [
+  //       {
+  //         id: 1,
+  //         subject: `${query} - Hợp đồng mới từ công ty ABC`,
+  //         from: "abc@company.com",
+  //       },
+  //       {
+  //         id: 2,
+  //         subject: `Re: ${query} - Báo cáo tháng 12`,
+  //         from: "manager@company.com",
+  //       },
+  //       {
+  //         id: 3,
+  //         subject: `${query} - Thông báo họp team`,
+  //         from: "hr@company.com",
+  //       },
+  //       {
+  //         id: 4,
+  //         subject: `Fwd: ${query} - Tài liệu quan trọng`,
+  //         from: "support@company.com",
+  //       },
+  //       {
+  //         id: 5,
+  //         subject: `${query} - Lịch nghỉ lễ 2025`,
+  //         from: "admin@company.com",
+  //       },
+  //     ];
 
-      setSuggestions(mockSuggestions);
-      setShowSuggestions(true);
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     setSuggestions(mockSuggestions);
+  //     setShowSuggestions(true);
+  //   } catch (error) {
+  //     console.error("Error fetching suggestions:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  // Debounce search - gọi API sau 5s
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       if (searchTimeoutRef.current) {
@@ -126,9 +138,9 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
     // Chỉ chuyển đến trang search nếu có text
     if (searchQuery.trim()) {
       console.log("Searching for:", searchQuery);
-      dispatch(clearResultOnly()); // Reset kết quả cũ
-      dispatch(setLoading(true)); // Bật loading ngay lập tức
-      dispatch(setSearchTriggered(true)); // Trigger search
+      dispatch(clearResultOnly());
+      dispatch(setLoading(true));
+      dispatch(setSearchTriggered(true));
       navigate("/search");
     }
     setShowSuggestions(false);
@@ -137,11 +149,10 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   const handleSuggestionClick = (suggestion) => {
     console.log("Selected suggestion:", suggestion);
     dispatch(setSearchInput(suggestion.subject));
-    dispatch(clearResultOnly()); // Reset kết quả cũ
-    dispatch(setLoading(true)); // Bật loading ngay lập tức
-    dispatch(setSearchTriggered(true)); // Trigger search
+    dispatch(clearResultOnly());
+    dispatch(setLoading(true));
+    dispatch(setSearchTriggered(true));
     setShowSuggestions(false);
-    // Chuyển đến trang search với suggestion
     if (suggestion.subject.trim()) {
       navigate("/search");
     }
@@ -153,13 +164,13 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
       if (userId) {
         await authApi.logout(userId);
       }
-      // Clear user data
+
       userManager.user = null;
-      // Redirect to login
+
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Still redirect even if API fails
+
       userManager.user = null;
       navigate("/login");
     }
@@ -167,7 +178,6 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm z-20">
       <div className="px-4 lg:px-10 py-3 grid grid-cols-4 items-center gap-4">
-        {/* Left: Mobile menu + Logo + Search */}
         <div className="flex items-center gap-4 justify-start col-span-2">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
@@ -187,7 +197,6 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
             </div>
           </div>
 
-          {/* Search Box - Desktop */}
           <div
             className="hidden lg:flex flex-1 max-w-3xl ml-10"
             ref={searchContainerRef}
@@ -205,7 +214,6 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
 
-              {/* Suggestions Dropdown */}
               {showSuggestions && (
                 <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                   {isLoading ? (
@@ -303,7 +311,6 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
 
       {/* Mobile navigation */}
       <div className="md:hidden px-4 pb-3 space-y-3 border-t border-gray-100 pt-3">
-        {/* Mobile Search */}
         <form onSubmit={handleSearch} className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input

@@ -105,10 +105,6 @@ function Column({
           column.nextPageToken &&
           !isLoadingRef.current
         ) {
-          console.log(
-            `Intersection triggered for ${column.name}, token:`,
-            column.nextPageToken
-          );
           isLoadingRef.current = true;
           onLoadMore(column.name);
         }
@@ -871,7 +867,9 @@ export default function EmailKanbanBoard() {
   return loading ? (
     <>
       <Header setIsMobileSidebarOpen={setIsMobileSidebarOpen} />
-      <p>loading...</p>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-24 w-24 border-b-2 border-orange-500"></div>
+      </div>
     </>
   ) : error ? (
     <>
