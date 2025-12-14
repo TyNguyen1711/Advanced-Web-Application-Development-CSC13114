@@ -3,11 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const taskSlice = createSlice({
   name: "tasks",
   initialState: {
-    // Danh sách các loại list type
     listTypes: ["INBOX", "TODO", "DONE"],
 
-    // Danh sách mails cho mỗi type với cấu trúc:
-    // { name: "TODO", nextPageToken: "...", threads: [...], loading: false, hasMore: true }
     mails: [
       {
         name: "INBOX",
@@ -36,28 +33,26 @@ const taskSlice = createSlice({
     ],
   },
   reducers: {
-    // Set threads cho một type cụ thể (replace toàn bộ)
     setThreadsForType: (state, action) => {
       const { typeName, threads, nextPageToken } = action.payload;
       const mailIndex = state.mails.findIndex((m) => m.name === typeName);
       if (mailIndex !== -1) {
         state.mails[mailIndex].threads = threads;
         state.mails[mailIndex].nextPageToken = nextPageToken || null;
-        // hasMore chỉ true khi nextPageToken có giá trị (không null, undefined, hoặc empty string)
+
         state.mails[mailIndex].hasMore = !!(
           nextPageToken && nextPageToken.trim()
         );
       }
     },
 
-    // Append threads cho một type (dùng cho infinity scroll)
     appendThreadsForType: (state, action) => {
       const { typeName, threads, nextPageToken } = action.payload;
       const mailIndex = state.mails.findIndex((m) => m.name === typeName);
       if (mailIndex !== -1) {
         state.mails[mailIndex].threads.push(...threads);
         state.mails[mailIndex].nextPageToken = nextPageToken || null;
-        // hasMore chỉ true khi nextPageToken có giá trị (không null, undefined, hoặc empty string)
+
         state.mails[mailIndex].hasMore = !!(
           nextPageToken && nextPageToken.trim()
         );
@@ -107,7 +102,6 @@ const taskSlice = createSlice({
       state.mails = state.mails.filter((m) => m.name !== typeName);
     },
 
-    // Update một thread cụ thể trong một type (ví dụ: sau khi drag & drop)
     updateThreadInType: (state, action) => {
       const { typeName, threadId, updatedThread } = action.payload;
       const mailIndex = state.mails.findIndex((m) => m.name === typeName);
@@ -136,9 +130,9 @@ const taskSlice = createSlice({
         );
         if (threadIndex !== -1) {
           const thread = state.mails[fromMailIndex].threads[threadIndex];
-          // Remove từ source
+
           state.mails[fromMailIndex].threads.splice(threadIndex, 1);
-          // Add vào destination
+
           state.mails[toMailIndex].threads.unshift(thread);
         }
       }

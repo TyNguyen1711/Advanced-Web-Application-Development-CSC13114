@@ -10,6 +10,8 @@ import SignupPage from "./pages/Signup";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import KanpanPage from "./pages/KanpanPage";
+import { Search } from "lucide-react";
+import SearchPage from "./pages/SearchPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +44,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <EmailDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
               </ProtectedRoute>
             }
           />

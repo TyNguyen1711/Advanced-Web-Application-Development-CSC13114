@@ -756,14 +756,12 @@ export default function EmailKanbanBoard() {
         return newColumns;
       });
     } else {
-      // Di chuyển trong cùng column
       setLocalColumns((prev) => {
         const newColumns = prev.map((col) => {
           if (col.id === sourceColumn) {
             const newItems = [...col.items];
             const [movedItem] = newItems.splice(sourceIndex, 1);
 
-            // Tính lại insert index nếu di chuyển xuống trong cùng column
             let finalInsertIndex = insertIndex;
             if (insertIndex > sourceIndex) {
               finalInsertIndex = insertIndex - 1;

@@ -35,193 +35,6 @@ import {
 } from "../redux/threadSlice";
 import Header from "../components/dashboard/Header";
 
-// Compose Modal Component
-
-const handleSchedule = () => {
-  // alert("Email scheduled for later! ⏰");
-  // onClose();
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {forward ? "Forward Message" : replyTo ? "Reply" : "New Message"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-4">
-            {/* To Field */}
-            <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-              <label className="text-sm font-medium text-gray-700 w-12">
-                To:
-              </label>
-              <input
-                type="email"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                placeholder="Recipients"
-                className="flex-1 outline-none text-sm text-gray-900"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowCc(!showCc)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Cc
-                </button>
-                <button
-                  onClick={() => setShowBcc(!showBcc)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Bcc
-                </button>
-              </div>
-            </div>
-
-            {/* Cc Field */}
-            {showCc && (
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <label className="text-sm font-medium text-gray-700 w-12">
-                  Cc:
-                </label>
-                <input
-                  type="email"
-                  value={cc}
-                  onChange={(e) => setCc(e.target.value)}
-                  placeholder="Carbon copy"
-                  className="flex-1 outline-none text-sm text-gray-900"
-                />
-              </div>
-            )}
-
-            {/* Bcc Field */}
-            {showBcc && (
-              <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                <label className="text-sm font-medium text-gray-700 w-12">
-                  Bcc:
-                </label>
-                <input
-                  type="email"
-                  placeholder="Blind carbon copy"
-                  className="flex-1 outline-none text-sm text-gray-900"
-                />
-              </div>
-            )}
-
-            {/* Subject Field */}
-            <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-              <label className="text-sm font-medium text-gray-700 w-12">
-                Subject:
-              </label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Subject"
-                className="flex-1 outline-none text-sm text-gray-900"
-              />
-            </div>
-
-            {/* Original Message Quote (for replies/forwards) */}
-            {replyTo && (
-              <div className="bg-gray-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
-                <div className="text-xs text-gray-500 mb-2">
-                  On {replyTo.date} at {replyTo.timestamp}, {replyTo.from}{" "}
-                  wrote:
-                </div>
-                <div
-                  className="text-sm text-gray-700 line-clamp-3"
-                  dangerouslySetInnerHTML={{ __html: replyTo.body }}
-                />
-              </div>
-            )}
-
-            {/* Body Field */}
-            <div className="min-h-[300px]">
-              <textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Compose your message..."
-                className="w-full h-full min-h-[300px] outline-none text-sm text-gray-900 resize-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Toolbar */}
-        <div className="border-t border-gray-200 px-6 py-3 bg-gray-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Bold className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Italic className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Underline className="w-4 h-4 text-gray-600" />
-              </button>
-              <div className="w-px h-6 bg-gray-300 mx-1" />
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Link2 className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Paperclip className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <ImageIcon className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Smile className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
-                <Trash2 className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-white">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSend}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium flex items-center gap-2 shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl"
-            >
-              <Send className="w-4 h-4" />
-              Send
-            </button>
-            <button
-              // onClick={handleSchedule}
-              className="px-4 py-2.5 border border-gray-300 hover:bg-gray-50 rounded-lg font-medium flex items-center gap-2 transition-colors"
-            >
-              <Clock className="w-4 h-4" />
-              Schedule
-            </button>
-          </div>
-
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <MoreVertical className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // EmailDashboard.jsx
 const EmailDashboard = () => {
   const dispatch = useDispatch();
@@ -237,7 +50,6 @@ const EmailDashboard = () => {
   const [composeMode, setComposeMode] = useState({ type: "new", email: null });
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Use custom hooks
   useAuthTokens();
   useFetchThreads();
 
@@ -267,7 +79,6 @@ const EmailDashboard = () => {
       }
     });
 
-    // Reset to first thread or null if no threads
     if (currentThreads.length > 0) {
       setSelectedThread(currentThreads[0]);
       setSelectedThreadId(currentThreads[0].id);
@@ -276,13 +87,10 @@ const EmailDashboard = () => {
       setSelectedThreadId("");
     }
 
-    // Show email list on mobile when changing mailbox
     setShowEmailList(true);
-  }, [selectedMailbox]); // Remove allThreadsState from dependencies
+  }, [selectedMailbox]);
 
-  // Separate effect to update selectedThread when allThreadsState changes
   useEffect(() => {
-    // Only update if we have a selectedThreadId
     if (selectedThreadId && allThreadsState.length > 0) {
       const updatedThread = allThreadsState.find(
         (t) => t.id === selectedThreadId
@@ -305,16 +113,13 @@ const EmailDashboard = () => {
     };
 
     allThreadsState.forEach((thread) => {
-      // Check if the LAST message in thread is unread
       const lastMessage = thread.messages?.[thread.messages.length - 1];
       const isUnread = lastMessage?.labelIds?.includes("UNREAD");
 
-      // Get all unique labels from all messages in thread
       const labels =
         thread?.messages?.flatMap((msg) => msg.labelIds || []) || [];
       const uniqueLabels = [...new Set(labels)];
 
-      // Count unread threads for each mailbox
       if (isUnread) {
         if (uniqueLabels.includes("INBOX")) {
           counts.inbox++;
@@ -434,9 +239,7 @@ const EmailDashboard = () => {
   });
 
   const handleToggleStar = async (messageId, data) => {
-    // Update Redux state immediately (optimistic update)
     const updatedThreads = allThreadsState.map((thread) => {
-      // Check if this thread contains the message
       const hasMessage = thread.messages.some((msg) => msg.id === messageId);
 
       if (hasMessage) {
@@ -444,11 +247,9 @@ const EmailDashboard = () => {
           ...thread,
           messages: thread.messages.map((msg) => {
             if (msg.id === messageId) {
-              // Update this specific message's labels
               let newLabelIds = [...(msg.labelIds || [])];
 
               if (data.add.includes("STARRED")) {
-                // Add STARRED if not already there
                 if (!newLabelIds.includes("STARRED")) {
                   newLabelIds.push("STARRED");
                 }
@@ -484,22 +285,20 @@ const EmailDashboard = () => {
 
   const handleDeleteThread = async (threadId) => {
     if (confirm("Are you sure you want to delete this email?")) {
-      // Find the thread to get its messages
       const thread = allThreadsState.find((t) => t.id === threadId);
       if (!thread) return;
 
-      // Update Redux state immediately (optimistic update)
       const updatedThreads = allThreadsState.map((t) => {
         if (t.id === threadId) {
           return {
             ...t,
             messages: t.messages.map((msg) => {
               let newLabelIds = [...(msg.labelIds || [])];
-              // Add TRASH label if not already there
+
               if (!newLabelIds.includes("TRASH")) {
                 newLabelIds.push("TRASH");
               }
-              // Remove INBOX, STARRED, UNREAD labels
+
               newLabelIds = newLabelIds.filter(
                 (label) => !["INBOX", "STARRED", "UNREAD"].includes(label)
               );
@@ -591,7 +390,6 @@ const EmailDashboard = () => {
   };
 
   const handleBulkMarkAsRead = async (threadIds, read) => {
-    // Update all threads at once
     const updatedThreads = allThreadsState.map((thread) => {
       if (threadIds.includes(thread.id)) {
         return {
@@ -600,10 +398,8 @@ const EmailDashboard = () => {
             if (index === thread.messages.length - 1) {
               let newLabelIds = [...(msg.labelIds || [])];
               if (read) {
-                // Mark as read: remove UNREAD
                 newLabelIds = newLabelIds.filter((l) => l !== "UNREAD");
               } else {
-                // Mark as unread: add UNREAD if not already there
                 if (!newLabelIds.includes("UNREAD")) {
                   newLabelIds.push("UNREAD");
                 }

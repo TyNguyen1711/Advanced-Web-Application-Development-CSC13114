@@ -3,12 +3,19 @@ import { Mail, Plus, Image as ImageIcon, LogOut, Search } from "lucide-react";
 import authApi from "../../services/authApi";
 import { userManager } from "../../services/apiClient";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  setSearchInput,
+  setSearchTriggered,
+  clearResultOnly,
+  setLoading,
+} from "../../redux/searchSlice";
 
 import { useState, useEffect, useRef } from "react";
 const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const searchQuery = useSelector((state) => state.search.searchInput);
   const [activeTabId, setActiveTabId] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,14 +86,12 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   // Debounce search - gọi API sau 5s
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
-      // Clear timeout cũ
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
 
-      // Set timeout mới - 5 giây
       searchTimeoutRef.current = setTimeout(() => {
-        fetchSuggestions(searchQuery);
+        // fetchSuggestions(searchQuery);
       }, 5000);
     } else {
       setSuggestions([]);
@@ -118,16 +123,28 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Xử lý tìm kiếm ở đây
-    console.log("Searching for:", searchQuery);
+    // Chỉ chuyển đến trang search nếu có text
+    if (searchQuery.trim()) {
+      console.log("Searching for:", searchQuery);
+      dispatch(clearResultOnly()); // Reset kết quả cũ
+      dispatch(setLoading(true)); // Bật loading ngay lập tức
+      dispatch(setSearchTriggered(true)); // Trigger search
+      navigate("/search");
+    }
     setShowSuggestions(false);
   };
 
   const handleSuggestionClick = (suggestion) => {
     console.log("Selected suggestion:", suggestion);
-    setSearchQuery(suggestion.subject);
+    dispatch(setSearchInput(suggestion.subject));
+    dispatch(clearResultOnly()); // Reset kết quả cũ
+    dispatch(setLoading(true)); // Bật loading ngay lập tức
+    dispatch(setSearchTriggered(true)); // Trigger search
     setShowSuggestions(false);
-    // Có thể navigate đến email chi tiết hoặc xử lý khác
+    // Chuyển đến trang search với suggestion
+    if (suggestion.subject.trim()) {
+      navigate("/search");
+    }
   };
 
   const handleLogout = async () => {
@@ -180,7 +197,7 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => dispatch(setSearchInput(e.target.value))}
                 onFocus={() =>
                   suggestions.length > 0 && setShowSuggestions(true)
                 }
@@ -292,7 +309,7 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => dispatch(setSearchInput(e.target.value))}
             placeholder="Tìm kiếm..."
             className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
