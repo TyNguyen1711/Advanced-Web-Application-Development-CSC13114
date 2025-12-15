@@ -118,7 +118,6 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
     };
   }, [searchQuery]);
 
-  // Đóng suggestions khi click bên ngoài
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -135,9 +134,7 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Chỉ chuyển đến trang search nếu có text
     if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
       dispatch(clearResultOnly());
       dispatch(setLoading(true));
       dispatch(setSearchTriggered(true));
@@ -147,7 +144,6 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   };
 
   const handleSuggestionClick = (suggestion) => {
-    console.log("Selected suggestion:", suggestion);
     dispatch(setSearchInput(suggestion.subject));
     dispatch(clearResultOnly());
     dispatch(setLoading(true));

@@ -17,8 +17,8 @@ const EmailCard = ({
   style,
   isSnoozed = true,
   columnId,
-  onOpenEmail, // Callback to notify parent when opening email
-  onCloseEmail, // Callback to notify parent when closing email
+  onOpenEmail,
+  onCloseEmail,
 }) => {
   const dispatch = useDispatch();
   const [isOpenSnooze, setIsOpenSnooze] = useState(false);
@@ -26,7 +26,6 @@ const EmailCard = ({
 
   const handleOpenEmail = () => {
     setIsOpenEmailModal(true);
-    // Notify parent (e.g., SnoozeModal) to hide itself
     if (onOpenEmail) {
       onOpenEmail();
     }

@@ -71,7 +71,6 @@ const ForwardBox = ({ thread, forwardingMessage, onSend, onCancel }) => {
           partId: part.partId,
         }));
         setAttachments(formattedAttachments);
-        console.log("Loaded attachments from message:", formattedAttachments);
       }
     }
   }, [forwardingMessage]);

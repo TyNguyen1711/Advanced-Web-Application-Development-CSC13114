@@ -78,12 +78,10 @@ export default function SnoozeTimePicker({
           </div>
         )}
 
-        {/* Input Fields */}
         <div className="p-6">
           <p className="text-sm font-medium text-gray-700 mb-4">Snooze for:</p>
 
           <div className="space-y-4">
-            {/* Days */}
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <input
