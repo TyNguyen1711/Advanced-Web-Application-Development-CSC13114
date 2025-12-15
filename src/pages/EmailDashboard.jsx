@@ -34,6 +34,8 @@ import {
   appendThreads,
 } from "../redux/threadSlice";
 import Header from "../components/dashboard/Header";
+import taskApi from "../services/taskApi";
+import searchApi from "../services/searchApi";
 
 // EmailDashboard.jsx
 const EmailDashboard = () => {
@@ -52,7 +54,29 @@ const EmailDashboard = () => {
 
   useAuthTokens();
   useFetchThreads();
+  useEffect(() => {
+    const addType = async () => {
+      try {
+        taskApi.addType("TODO");
+        taskApi.addType("DONE");
+      } catch (error) {
+        console.error("Error adding types:", error);
+      }
+    };
 
+    addType();
+  }, []);
+  useEffect(() => {
+    const searchTemp = async () => {
+      try {
+        searchApi.searchEmails("abc");
+      } catch (error) {
+        console.error("Error adding types:", error);
+      }
+    };
+
+    searchTemp();
+  }, []);
   useEffect(() => {
     const currentThreads = allThreadsState.filter((thread) => {
       const labels =

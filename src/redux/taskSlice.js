@@ -77,18 +77,16 @@ const taskSlice = createSlice({
       }
     },
 
-    // Add a new list type (column) with infinity scroll support
-    // All new columns automatically get infinity scroll capability
     addNewListType: (state, action) => {
       const { typeName, icon, color } = action.payload;
       if (!state.listTypes.includes(typeName)) {
         state.listTypes.push(typeName);
         state.mails.push({
           name: typeName,
-          nextPageToken: null, // Will be set when data is fetched
+          nextPageToken: null,
           threads: [],
           loading: false,
-          hasMore: true, // Assume more data available initially
+          hasMore: true,
           error: null,
           icon: icon || null,
           color: color || null,
@@ -141,10 +139,9 @@ const taskSlice = createSlice({
       }
     },
 
-    // Remove thread from a type
     removeThreadFromType: (state, action) => {
       const { typeName, threadId } = action.payload;
-      // Convert to uppercase to match Redux state format
+
       const upperTypeName = typeName.toUpperCase();
       const mailIndex = state.mails.findIndex((m) => m.name === upperTypeName);
       console.log(
@@ -173,7 +170,6 @@ const taskSlice = createSlice({
       }
     },
 
-    // Reset all data
     resetAllTasks: (state) => {
       state.mails = state.mails.map((mail) => ({
         ...mail,

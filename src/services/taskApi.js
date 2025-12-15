@@ -60,6 +60,16 @@ const taskApi = {
       throw error;
     }
   },
+  addType: async (typeName) => {
+    try {
+      const response = await apiClient.post("/tasks/status", {
+        status: typeName,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default taskApi;
