@@ -5,7 +5,7 @@ const taskSlice = createSlice({
   initialState: {
     // listTypes: ["INBOX", "TODO", "DONE", "DONE2", "SNOOZED"],
     listTypes: [{ id: "0000", status: "INBOX" }],
-
+    isRunFirstFetch: false,
     // listTypes: [],
     googleLabel: [],
     mails: [
@@ -206,6 +206,9 @@ const taskSlice = createSlice({
     updateListTypes: (state, action) => {
       state.listTypes = action.payload;
     },
+    setIsRunFirstFetch: (state, action) => {
+      state.isRunFirstFetch = action.payload;
+    },
     setListTypes: (state, action) => {
       const newItems = action.payload.filter(
         (newItem) =>
@@ -247,4 +250,5 @@ export const {
   resetAllTasks,
   setGoogleLabels,
   setListTypes,
+  setIsRunFirstFetch,
 } = taskSlice.actions;

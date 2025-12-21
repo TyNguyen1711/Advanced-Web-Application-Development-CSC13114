@@ -84,7 +84,7 @@ const taskApi = {
   },
   deleteType: async (typeId) => {
     try {
-      const response = await apiClient.delete(`/tasks/status/${typeId}`);
+      const response = await apiClient.delete(`/tasks/status?id=${typeId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -119,7 +119,7 @@ const taskApi = {
   },
   deleteLabelMapping: async (mappingId) => {
     try {
-      const response = await apiClient.delete(`/labels/${mappingId}`);
+      const response = await apiClient.delete(`/labels?id=${mappingId}`);
       return response.data;
     } catch (error) {
       throw error;

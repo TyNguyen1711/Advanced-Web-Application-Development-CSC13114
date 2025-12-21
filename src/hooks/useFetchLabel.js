@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import taskApi from "../services/taskApi";
-import { setGoogleLabels, setListTypes } from "../redux/taskSlice";
+import {
+  setGoogleLabels,
+  setIsRunFirstFetch,
+  setListTypes,
+} from "../redux/taskSlice";
 
 const useFetchLabel = () => {
   const dispatch = useDispatch();
@@ -17,6 +21,7 @@ const useFetchLabel = () => {
 
         dispatch(setGoogleLabels(labels.labels || []));
         dispatch(setListTypes(types.statuses || []));
+        dispatch(setIsRunFirstFetch(true));
       } catch (err) {
         setError(err.message || "Failed to fetch labels");
       } finally {

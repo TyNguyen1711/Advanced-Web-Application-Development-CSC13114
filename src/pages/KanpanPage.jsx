@@ -11,6 +11,7 @@ import {
   Paperclip,
   MailOpen,
   Settings,
+  RefreshCw,
 } from "lucide-react";
 import EmailCard from "../components/dashboard/EmailCard";
 import Header from "../components/dashboard/Header";
@@ -369,6 +370,7 @@ export default function EmailKanbanBoard() {
   const dragOffset = useRef({ x: 0, y: 0 });
   const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
   const listTypes = useSelector((state) => state.tasks.listTypes);
+  const isRunFirstFetch = useSelector((state) => state.tasks.isRunFirstFetch);
   const handleOpenLabelModal = () => {
     setIsLabelModalOpen(true);
   };
@@ -377,18 +379,10 @@ export default function EmailKanbanBoard() {
     (a, b) => {
       // Custom equality check - always return false to force re-render for debugging
       const isEqual = JSON.stringify(a) === JSON.stringify(b);
-      console.log("useSelector equality check:", isEqual);
+
       return isEqual;
     }
   );
-
-  // Debug: Log when mails changes
-  useEffect(() => {
-    console.log(
-      "Mails from Redux updated:",
-      mails.map((m) => ({ name: m.name, threadsCount: m.threads.length }))
-    );
-  }, [mails]);
 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { fetchAllTasks, fetchTasksForType, loading, error } = useGetAllTasks();
@@ -474,7 +468,6 @@ export default function EmailKanbanBoard() {
   }, [localColumns, sortConfig, filterConfig]);
 
   useEffect(() => {
-    console.log("Updating localColumns from mails...");
     const updatedColumns = mails.map((mail) => {
       const iconConfig = iconMapping[mail.name] || {
         icon: Mail,
@@ -506,7 +499,7 @@ export default function EmailKanbanBoard() {
     if (listTypes.length > 0) {
       fetchAllTasks();
     }
-  }, [listTypes.length]);
+  }, [isRunFirstFetch]);
 
   const handleLoadMore = useCallback(
     (typeName) => {
@@ -530,11 +523,6 @@ export default function EmailKanbanBoard() {
         return;
       }
 
-      // All validations passed, fetch more data
-      console.log(
-        `[${typeName}] Fetching more items with token:`,
-        mail.nextPageToken.substring(0, 20) + "..."
-      );
       fetchTasksForType(typeName, mail.nextPageToken);
     },
     [mails, fetchTasksForType]
@@ -950,7 +938,16 @@ export default function EmailKanbanBoard() {
               className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-medium rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all shadow-lg hover:shadow-xl hover:scale-105 transform"
             >
               <Settings className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-              <span>Quản lý Labels</span>
+              <span>Manage Labels</span>
+            </button>
+
+            <button
+              onClick={() => window.location.reload()}
+              className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl hover:scale-105 transform"
+              title="Refresh page"
+            >
+              <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+              <span>Refresh</span>
             </button>
           </div>
           <div className="flex-1 overflow-x-auto overflow-y-hidden pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
