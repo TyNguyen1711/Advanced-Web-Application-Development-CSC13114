@@ -3,9 +3,11 @@ import { createSlice } from "@reduxjs/toolkit";
 const taskSlice = createSlice({
   name: "tasks",
   initialState: {
-    listTypes: ["INBOX", "TODO", "DONE", "DONE2", "SNOOZED"],
-    // listTypes: [],
+    // listTypes: ["INBOX", "TODO", "DONE", "DONE2", "SNOOZED"],
+    listTypes: [{ id: "0000", status: "INBOX" }],
 
+    // listTypes: [],
+    googleLabel: [],
     mails: [
       {
         name: "INBOX",
@@ -15,26 +17,43 @@ const taskSlice = createSlice({
         hasMore: true,
         error: null,
       },
-      {
-        name: "TODO",
-        nextPageToken: null,
-        threads: [],
-        loading: false,
-        hasMore: true,
-        error: null,
-      },
-      {
-        name: "DONE",
-        nextPageToken: null,
-        threads: [],
-        loading: false,
-        hasMore: true,
-        error: null,
-      },
+      // {
+      //   name: "TODO",
+      //   nextPageToken: null,
+      //   threads: [],
+      //   loading: false,
+      //   hasMore: true,
+      //   error: null,
+      // },
+      // {
+      //   name: "DONE",
+      //   nextPageToken: null,
+      //   threads: [],
+      //   loading: false,
+      //   hasMore: true,
+      //   error: null,
+      // },
+      // {
+      //   name: "DONE2",
+      //   nextPageToken: null,
+      //   threads: [],
+      //   loading: false,
+      //   hasMore: true,
+      //   error: null,
+      // },
+      // {
+      //   name: "SNOOZED",
+      //   nextPageToken: null,
+      //   threads: [],
+      //   loading: false,
+      //   hasMore: true,
+      //   error: null,
+      // },
     ],
   },
   reducers: {
     setThreadsForType: (state, action) => {
+      console.log("[Redux] setThreadsForType action.payload:", action.payload);
       const { typeName, threads, nextPageToken } = action.payload;
       const mailIndex = state.mails.findIndex((m) => m.name === typeName);
       if (mailIndex !== -1) {
@@ -181,6 +200,32 @@ const taskSlice = createSlice({
         error: null,
       }));
     },
+    setGoogleLabels: (state, action) => {
+      state.googleLabel = action.payload;
+    },
+    setListTypes: (state, action) => {
+      const newItems = action.payload.filter(
+        (newItem) =>
+          !state.listTypes.some(
+            (existingItem) => existingItem.id === newItem.id
+          )
+      );
+      state.listTypes = [...state.listTypes, ...newItems];
+
+      // Add corresponding mail columns for new types
+      newItems.forEach((item) => {
+        if (!state.mails.some((m) => m.name === item.status)) {
+          state.mails.push({
+            name: item.status,
+            nextPageToken: null,
+            threads: [],
+            loading: false,
+            hasMore: true,
+            error: null,
+          });
+        }
+      });
+    },
   },
 });
 
@@ -196,4 +241,6 @@ export const {
   moveThreadBetweenTypes,
   removeThreadFromType,
   resetAllTasks,
+  setGoogleLabels,
+  setListTypes,
 } = taskSlice.actions;

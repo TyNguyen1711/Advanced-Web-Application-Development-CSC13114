@@ -28,7 +28,7 @@ const useGetAllTasks = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const listTypes = useSelector((state) => state.tasks.listTypes);
-
+  console.log("[useFetchTask] listTypes from Redux:", listTypes);
   // Fetch tất cả tasks cho tất cả types (lần đầu load)
   const fetchAllTasks = async () => {
     try {
@@ -37,18 +37,18 @@ const useGetAllTasks = () => {
 
       // Fetch tasks cho tất cả các types
       const fetchPromises = listTypes.map((typeName) =>
-        taskApi.getTasksByType(typeName)
+        taskApi.getTasksByType(typeName.status)
       );
 
       const results = await Promise.all(fetchPromises);
-
+      console.log("[useFetchTask] Fetched tasks for all types:", results);
       // Dispatch results cho từng type
       results.forEach((data, index) => {
-        const typeName = listTypes[index];
+        const typeObj = listTypes[index];
         const threads = addSummaryToThreads(data.mailTasks || []);
         dispatch(
           setThreadsForType({
-            typeName,
+            typeName: typeObj.status,
             threads,
             nextPageToken: data.nextPageToken || null,
           })

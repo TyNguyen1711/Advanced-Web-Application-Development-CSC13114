@@ -78,6 +78,14 @@ const taskApi = {
       throw error;
     }
   },
+  getGoogleLabels: async () => {
+    try {
+      const response = await apiClient.get("/labels");
+      return response.data.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default taskApi;

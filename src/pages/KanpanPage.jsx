@@ -18,6 +18,7 @@ import useGetAllTasks from "../hooks/useFetchTask";
 import taskApi from "../services/taskApi";
 import SnoozeModal from "../components/modal/SnoozeModal";
 import { moveThreadBetweenTypes } from "../redux/taskSlice";
+import useFetchLabel from "../hooks/useFetchLabel";
 
 function DraggableItem({
   thread,
@@ -301,24 +302,40 @@ function Column({
         onDragEnter={(e) => onDragEnter(e, column.id)}
         onDrop={(e) => onDrop(e, column.id)}
       >
-        {column.items.map((thread, index) => (
-          <DraggableItem
-            key={thread.id}
-            thread={thread}
-            columnId={column.id}
-            index={index}
-            onDragStart={onDragStart}
-            isDragging={thread.isDragging}
-            transform={transforms[column.id]?.[index] || 0}
-          />
-        ))}
-
-        {/* Loading indicator for infinity scroll */}
-        {column.loading && (
-          <div className="text-center py-4">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
-            <p className="text-xs text-gray-500 mt-2">Loading more...</p>
+        {/* Skeleton loading for whole column if loading and no items */}
+        {column.loading && column.items.length === 0 ? (
+          <div className="space-y-3">
+            {[...Array(4)].map((_, idx) => (
+              <div
+                key={idx}
+                className="animate-pulse bg-gray-200 rounded-xl h-24 w-full"
+              />
+            ))}
+            <div className="text-center py-2 text-xs text-gray-400">
+              Loading...
+            </div>
           </div>
+        ) : (
+          <>
+            {column.items.map((thread, index) => (
+              <DraggableItem
+                key={thread.id}
+                thread={thread}
+                columnId={column.id}
+                index={index}
+                onDragStart={onDragStart}
+                isDragging={thread.isDragging}
+                transform={transforms[column.id]?.[index] || 0}
+              />
+            ))}
+            {/* Loading indicator for infinity scroll */}
+            {column.loading && column.items.length > 0 && (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+                <p className="text-xs text-gray-500 mt-2">Loading more...</p>
+              </div>
+            )}
+          </>
         )}
 
         {/* Infinity scroll trigger - works for all columns */}
@@ -337,6 +354,7 @@ function Column({
 }
 
 export default function EmailKanbanBoard() {
+  useFetchLabel();
   const dispatch = useDispatch();
   const [draggedItem, setDraggedItem] = useState(null);
   const ghostPositionRef = useRef({ x: 0, y: 0 });
@@ -480,8 +498,10 @@ export default function EmailKanbanBoard() {
   const columns = getProcessedColumns();
 
   useEffect(() => {
-    fetchAllTasks();
-  }, []);
+    if (listTypes.length > 0) {
+      fetchAllTasks();
+    }
+  }, [listTypes.length]);
 
   const handleLoadMore = useCallback(
     (typeName) => {
@@ -909,9 +929,9 @@ export default function EmailKanbanBoard() {
       </div>
       <Header setIsMobileSidebarOpen={setIsMobileSidebarOpen} />
 
-      <main className="relative z-10 px-6 py-3 h-[calc(100vh-96px)]">
-        <div className="w-full max-w-[98%] mx-auto h-full">
-          <div className="mb-2 flex justify-end">
+      <main className="relative z-10 px-6 py-3 h-[calc(100vh-60px)]">
+        <div className="w-full max-w-[98%] mx-auto h-full flex flex-col">
+          <div className="mb-2 flex justify-end flex-shrink-0">
             <button
               onClick={handleOpenSnoozeModal}
               className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl hover:scale-105 transform"
@@ -920,31 +940,31 @@ export default function EmailKanbanBoard() {
               <span> Snoozed Emails</span>
             </button>
           </div>
-          <div
-            className="gap-6 h-full overflow-hidden"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
-            }}
-          >
-            {columns.map((column) => (
-              <Column
-                key={column.id}
-                column={column}
-                onDragStart={handleDragStart}
-                onDragEnter={handleDragEnter}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                isDragOver={dragOverColumn === column.id}
-                draggedOverIndex={dragOverIndex}
-                transforms={transforms}
-                onLoadMore={handleLoadMore}
-                sortConfig={sortConfig}
-                onSortChange={handleSortChange}
-                filterConfig={filterConfig}
-                onFilterChange={handleFilterChange}
-              />
-            ))}
+          <div className="flex-1 overflow-x-auto overflow-y-hidden pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+            <div
+              className="h-full flex gap-6"
+              style={{ minWidth: "max-content" }}
+            >
+              {columns.map((column) => (
+                <div key={column.id} className="flex-shrink-0 w-[450px]">
+                  <Column
+                    column={column}
+                    onDragStart={handleDragStart}
+                    onDragEnter={handleDragEnter}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    isDragOver={dragOverColumn === column.id}
+                    draggedOverIndex={dragOverIndex}
+                    transforms={transforms}
+                    onLoadMore={handleLoadMore}
+                    sortConfig={sortConfig}
+                    onSortChange={handleSortChange}
+                    filterConfig={filterConfig}
+                    onFilterChange={handleFilterChange}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </main>
