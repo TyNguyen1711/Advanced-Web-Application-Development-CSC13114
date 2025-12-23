@@ -10,5 +10,11 @@ const searchApi = {
     );
     return response.data;
   },
+  autoSuggestions: async (keyword) => {
+    const response = await apiClient.get(
+      `/search/suggestions?query=${keyword}&limit=5`
+    );
+    return response.data;
+  },
 };
 export default searchApi;

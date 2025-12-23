@@ -11,6 +11,7 @@ import {
 } from "../../redux/searchSlice";
 
 import { useState, useEffect, useRef } from "react";
+import searchApi from "../../services/searchApi";
 const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -52,49 +53,21 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   ];
 
   // Mock API để lấy gợi ý
-  // const fetchSuggestions = async (query) => {
-  //   setIsLoading(true);
-  //   try {
-  //     // Simulate API call
-  //     await new Promise((resolve) => setTimeout(resolve, 500));
+  const fetchSuggestions = async (query) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      const response = await searchApi.autoSuggestions(query);
+      console.log("Auto-suggestions response:", response);
 
-  //     // Mock data - gợi ý dựa trên query
-  //     const mockSuggestions = [
-  //       {
-  //         id: 1,
-  //         subject: `${query} - Hợp đồng mới từ công ty ABC`,
-  //         from: "abc@company.com",
-  //       },
-  //       {
-  //         id: 2,
-  //         subject: `Re: ${query} - Báo cáo tháng 12`,
-  //         from: "manager@company.com",
-  //       },
-  //       {
-  //         id: 3,
-  //         subject: `${query} - Thông báo họp team`,
-  //         from: "hr@company.com",
-  //       },
-  //       {
-  //         id: 4,
-  //         subject: `Fwd: ${query} - Tài liệu quan trọng`,
-  //         from: "support@company.com",
-  //       },
-  //       {
-  //         id: 5,
-  //         subject: `${query} - Lịch nghỉ lễ 2025`,
-  //         from: "admin@company.com",
-  //       },
-  //     ];
-
-  //     setSuggestions(mockSuggestions);
-  //     setShowSuggestions(true);
-  //   } catch (error) {
-  //     console.error("Error fetching suggestions:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+      setSuggestions(response.data.suggestions || []);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -103,7 +76,7 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
       }
 
       searchTimeoutRef.current = setTimeout(() => {
-        // fetchSuggestions(searchQuery);
+        fetchSuggestions(searchQuery);
       }, 5000);
     } else {
       setSuggestions([]);
@@ -144,12 +117,12 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
   };
 
   const handleSuggestionClick = (suggestion) => {
-    dispatch(setSearchInput(suggestion.subject));
+    dispatch(setSearchInput(suggestion.metadata));
     dispatch(clearResultOnly());
     dispatch(setLoading(true));
     dispatch(setSearchTriggered(true));
     setShowSuggestions(false);
-    if (suggestion.subject.trim()) {
+    if (suggestion.metadata.trim()) {
       navigate("/search");
     }
   };
@@ -222,7 +195,7 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
                       <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100 font-medium">
                         Gợi ý tìm kiếm
                       </div>
-                      {suggestions.map((suggestion) => (
+                      {suggestions?.map((suggestion) => (
                         <button
                           key={suggestion.id}
                           onClick={() => handleSuggestionClick(suggestion)}
@@ -232,10 +205,7 @@ const Header = ({ setIsMobileSidebarOpen, handleCompose }) => {
                             <Mail className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">
-                                {suggestion.subject}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                Từ: {suggestion.from}
+                                {suggestion.metadata}
                               </p>
                             </div>
                           </div>
